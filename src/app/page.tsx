@@ -236,12 +236,20 @@ export default function HomePage() {
         lat, lon, date,
       });
     };
+    const ipFallback = () =>
+      fetch('https://ipapi.co/json/')
+        .then(r => r.json())
+        .then((d: { latitude?: number; longitude?: number }) =>
+          load(d.latitude ?? 40.71, d.longitude ?? -74.01))
+        .catch(() => load(40.71, -74.01));
+
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         p => load(p.coords.latitude, p.coords.longitude),
-        () => load(40.71, -74.01),
+        ipFallback,
+        { timeout: 8000 },
       );
-    } else { load(40.71, -74.01); }
+    } else { ipFallback(); }
   }, []);
 
   useEffect(() => {
