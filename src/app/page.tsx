@@ -578,13 +578,22 @@ export default function HomePage() {
                 >✕</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  ['RA',    formatRA(selected.equatorial.ra)],
-                  ['Dec',   formatDec(selected.equatorial.dec)],
-                  ['Dist',  `${selected.equatorial.dist.toFixed(3)} AU`],
-                  ['Mag',   selected.magnitude.toFixed(1)],
-                  ['Phase', `${(selected.illumination * 100).toFixed(0)}%`],
-                ].map(([k, v]) => (
+                {(selected.name === 'Earth'
+                  ? [
+                      ['RA',    '—'],
+                      ['Dec',   '—'],
+                      ['Dist',  '0.000 AU'],
+                      ['Mag',   '—'],
+                      ['Phase', '100%'],
+                    ]
+                  : [
+                      ['RA',    formatRA(selected.equatorial.ra)],
+                      ['Dec',   formatDec(selected.equatorial.dec)],
+                      ['Dist',  `${selected.equatorial.dist.toFixed(3)} AU`],
+                      ['Mag',   selected.magnitude.toFixed(1)],
+                      ['Phase', `${(selected.illumination * 100).toFixed(0)}%`],
+                    ]
+                ).map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                     <span style={{ fontSize: 11, color: 'rgba(200,210,230,0.5)' }}>{k}</span>
                     <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-mono)' }}>{v}</span>
