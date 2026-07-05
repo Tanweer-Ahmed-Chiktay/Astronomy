@@ -221,6 +221,7 @@ export default function HomePage() {
   const [mounted,      setMounted]     = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [focusPlanet,  setFocusPlanet] = useState<PlanetName | null>(null);
+  const [inEarthMode,  setInEarthMode] = useState(false);
   const tz = userTZ();
 
   useEffect(() => { setMounted(true); }, []);
@@ -307,13 +308,14 @@ export default function HomePage() {
       overflow: 'hidden', background: '#000510',
       color: 'var(--text-primary)', fontFamily: 'var(--font-ui)',
     }}>
-      {/* ── Left floating panel ── */}
+      {/* ── Left floating panel — hidden in Earth mode ── */}
       <aside
         className="float-panel float-panel-left"
         style={{
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(0)' : 'translateX(-16px)',
-          transition: 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.34,1.2,0.64,1)',
+          opacity: mounted && !inEarthMode ? 1 : 0,
+          transform: mounted && !inEarthMode ? 'translateX(0)' : 'translateX(-16px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
+          pointerEvents: inEarthMode ? 'none' : 'auto',
         }}
       >
 
@@ -532,6 +534,7 @@ export default function HomePage() {
         {viewMode === 'solar-system' && (
           <SolarSystemView
             onPlanetSelect={handlePlanetSelect}
+            onEarthModeChange={setInEarthMode}
             lat={sky?.lat ?? 40.71}
             lon={sky?.lon ?? -74.01}
             className="absolute inset-0"
@@ -593,13 +596,14 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* ── Right floating panel ── */}
+      {/* ── Right floating panel — hidden in Earth mode ── */}
       <aside
         className="float-panel float-panel-right"
         style={{
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(0)' : 'translateX(16px)',
-          transition: 'opacity 0.45s ease 0.1s, transform 0.45s cubic-bezier(0.34,1.2,0.64,1) 0.1s',
+          opacity: mounted && !inEarthMode ? 1 : 0,
+          transform: mounted && !inEarthMode ? 'translateX(0)' : 'translateX(16px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
+          pointerEvents: inEarthMode ? 'none' : 'auto',
         }}
       >
 

@@ -336,6 +336,7 @@ function makeISSSprite(): THREE.Sprite {
 
 interface SolarSystemViewProps {
   onPlanetSelect?: (state: PlanetState) => void;
+  onEarthModeChange?: (active: boolean) => void;
   className?: string;
   lat?: number;
   lon?: number;
@@ -353,7 +354,7 @@ function fmtSpeed(s: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SolarSystemView({ onPlanetSelect, className = '', lat = 40.71, lon = -74.01, focusPlanet }: SolarSystemViewProps) {
+export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, className = '', lat = 40.71, lon = -74.01, focusPlanet }: SolarSystemViewProps) {
   const canvasRef       = useRef<HTMLCanvasElement>(null);
   const rafRef          = useRef<number>(0);
   const meshesRef       = useRef<Map<PlanetName, THREE.Mesh>>(new Map());
@@ -387,6 +388,14 @@ export default function SolarSystemView({ onPlanetSelect, className = '', lat = 
   const earthProxRef         = useRef(0);
   /** Timestamp (performance.now) until which proximity re-triggering is suppressed after exit */
   const earthExitCooldownRef = useRef(0);
+  const onEarthModeRef       = useRef(onEarthModeChange);
+  onEarthModeRef.current     = onEarthModeChange;
+
+  // Notify parent when Earth mode crosses the visible threshold
+  const earthModeActive = earthGlobeOpen;
+  useEffect(() => {
+    onEarthModeRef.current?.(earthModeActive);
+  }, [earthModeActive]);
 
   speedRef.current   = speed;
   playingRef.current = isPlaying;
@@ -828,8 +837,13 @@ export default function SolarSystemView({ onPlanetSelect, className = '', lat = 
         }}
       />
 
-      {/* ── Unified top pill nav bar ── */}
-      <div className="absolute select-none" style={{ top: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}>
+      {/* ── Unified top pill nav bar — hidden in Earth mode ── */}
+      <div className="absolute select-none" style={{
+        top: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
+        opacity: earthModeActive ? 0 : 1,
+        pointerEvents: earthModeActive ? 'none' : 'auto',
+        transition: 'opacity 0.4s ease',
+      }}>
         <div className="top-nav-pill">
           {/* Hint text */}
           <span className="nav-seg" style={{ fontSize: 10, letterSpacing: '0.035em', color: 'rgba(255,255,255,0.38)' }}>
@@ -952,8 +966,12 @@ export default function SolarSystemView({ onPlanetSelect, className = '', lat = 
         />
       )}
 
-      {/* Timeline controls */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+      {/* Timeline controls — hidden in Earth mode */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2" style={{
+        opacity: earthModeActive ? 0 : 1,
+        pointerEvents: earthModeActive ? 'none' : 'auto',
+        transition: 'opacity 0.4s ease',
+      }}>
         <div className="flex items-center gap-2 px-3 py-2 rounded-full"
           style={{ background: 'rgba(5,15,30,0.8)', border: '1px solid rgba(255,255,255,0.1)',
             backdropFilter: 'blur(12px)', fontFamily: 'var(--font-mono)' }}>
