@@ -341,6 +341,7 @@ interface SolarSystemViewProps {
   lat?: number;
   lon?: number;
   focusPlanet?: PlanetName | null;
+  bottomOffset?: number;
 }
 
 interface ISSData { latitude: number; longitude: number; altitude: number; velocity: number }
@@ -354,7 +355,7 @@ function fmtSpeed(s: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, className = '', lat = 40.71, lon = -74.01, focusPlanet }: SolarSystemViewProps) {
+export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, className = '', lat = 40.71, lon = -74.01, focusPlanet, bottomOffset = 0 }: SolarSystemViewProps) {
   const canvasRef       = useRef<HTMLCanvasElement>(null);
   const rafRef          = useRef<number>(0);
   const meshesRef       = useRef<Map<PlanetName, THREE.Mesh>>(new Map());
@@ -371,6 +372,8 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
 
   const [speed,          setSpeed]          = useState(1);
   const [isPlaying,      setIsPlaying]      = useState(true);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerDate,     setPickerDate]     = useState<Date>(() => new Date());
   const [simDisplay,     setSimDisplay]     = useState(() => new Date().toISOString().slice(0, 16).replace('T', ' '));
   const [planetInfo,     setPlanetInfo]     = useState<PlanetState | null>(null);
   const [issData,        setIssData]        = useState<ISSData | null>(null);
@@ -805,7 +808,7 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? '';
 
   return (
-    <div className={`relative w-full h-full bg-[#000510] ${className}`}>
+    <div className={`relative w-full h-full bg-[#000510] ${className}`} onClick={() => setShowDatePicker(false)}>
       <canvas
         ref={canvasRef}
         className="block w-full h-full"
@@ -843,15 +846,18 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
         opacity: earthModeActive ? 0 : 1,
         pointerEvents: earthModeActive ? 'none' : 'auto',
         transition: 'opacity 0.4s ease',
+        maxWidth: 'calc(100vw - 24px)',
       }}>
-        <div className="top-nav-pill">
-          {/* Hint text */}
-          <span className="nav-seg" style={{ fontSize: 10, letterSpacing: '0.035em', color: 'rgba(255,255,255,0.38)' }}>
-            {dragMode === 'pan' ? 'drag · pan' : 'drag · orbit'}
-          </span>
+        <div className="top-nav-pill" style={{ flexWrap: 'nowrap' }}>
+          {/* Hint text — desktop only */}
+          {!bottomOffset && (
+            <span className="nav-seg" style={{ fontSize: 10, letterSpacing: '0.035em', color: 'rgba(255,255,255,0.38)' }}>
+              {dragMode === 'pan' ? 'drag · pan' : 'drag · orbit'}
+            </span>
+          )}
 
-          {/* Divider */}
-          <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+          {/* Divider — desktop only */}
+          {!bottomOffset && <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />}
 
           {/* Pan / Orbit toggle */}
           <button
@@ -869,28 +875,39 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
             <span style={{ fontSize: 11 }}>↻</span> Orbit
           </button>
 
-          {/* Divider */}
-          <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
-
-          {/* Scroll hint */}
-          <span className="nav-seg" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-            scroll · zoom
-          </span>
-
-          {/* ISS (when live) */}
-          {issData && (
+          {/* Scroll hint + ISS — desktop only */}
+          {!bottomOffset && (
             <>
               <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
-              <span className="nav-seg" style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.5)',
-              }}>
-                <span style={{
-                  width: 5, height: 5, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.6)', flexShrink: 0,
-                  animation: 'issPulse 2s ease infinite',
-                }} />
-                ISS · {issData.latitude.toFixed(1)}°{issData.latitude >= 0 ? 'N' : 'S'} · {issData.altitude.toFixed(0)} km
+              <span className="nav-seg" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+                scroll · zoom
+              </span>
+              {issData && (
+                <>
+                  <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                  <span className="nav-seg" style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.5)',
+                  }}>
+                    <span style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.6)', flexShrink: 0,
+                      animation: 'issPulse 2s ease infinite',
+                    }} />
+                    ISS · {issData.latitude.toFixed(1)}°{issData.latitude >= 0 ? 'N' : 'S'} · {issData.altitude.toFixed(0)} km
+                  </span>
+                </>
+              )}
+            </>
+          )}
+
+          {/* ISS dot — mobile only */}
+          {!!bottomOffset && issData && (
+            <>
+              <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+              <span className="nav-seg" style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.6)', flexShrink: 0, animation: 'issPulse 2s ease infinite' }} />
+                ISS · {issData.latitude.toFixed(1)}°{issData.latitude >= 0 ? 'N' : 'S'}
               </span>
             </>
           )}
@@ -966,22 +983,110 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
         />
       )}
 
+      {/* ── Custom date/time picker overlay ── */}
+      {showDatePicker && (() => {
+        const D = pickerDate;
+        const adjust = (field: 'year'|'month'|'day'|'hour'|'minute', delta: number) => {
+          const n = new Date(D);
+          if (field === 'year')   n.setFullYear(n.getFullYear() + delta);
+          if (field === 'month')  n.setMonth(n.getMonth() + delta);
+          if (field === 'day')    n.setDate(n.getDate() + delta);
+          if (field === 'hour')   n.setHours(n.getHours() + delta);
+          if (field === 'minute') n.setMinutes(n.getMinutes() + delta);
+          setPickerDate(n);
+          handleDateInput(n.toISOString().slice(0,16));
+        };
+        const Spinner = ({ label, value, field }: { label: string; value: string; field: 'year'|'month'|'day'|'hour'|'minute' }) => (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <button onClick={() => adjust(field, 1)} style={{
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 6, width: 32, height: 24, cursor: 'pointer',
+              color: 'rgba(255,255,255,0.5)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
+            >▲</button>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600,
+              color: 'rgba(255,255,255,0.9)', letterSpacing: '0.04em',
+              minWidth: 32, textAlign: 'center', padding: '4px 0',
+            }}>{value}</div>
+            <button onClick={() => adjust(field, -1)} style={{
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 6, width: 32, height: 24, cursor: 'pointer',
+              color: 'rgba(255,255,255,0.5)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
+            >▼</button>
+            <div style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)', marginTop: 2 }}>{label}</div>
+          </div>
+        );
+        const sep = (char: string) => (
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 16, fontFamily: 'var(--font-mono)', paddingBottom: 18 }}>{char}</div>
+        );
+        return (
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: 72 + bottomOffset,
+            zIndex: 30,
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(8,12,24,0.92) 100%)',
+            border: '1px solid rgba(255,255,255,0.14)',
+            borderRadius: 16,
+            backdropFilter: 'blur(48px) saturate(180%)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.1) inset, 0 1px 0 rgba(255,255,255,0.16) inset',
+            padding: '16px 20px 12px',
+            display: 'flex', alignItems: 'center', gap: 8,
+            animation: 'fadeSlideUp 0.2s ease',
+            whiteSpace: 'nowrap',
+          }} onClick={e => e.stopPropagation()}>
+            <Spinner label="Year"  value={String(D.getFullYear())} field="year" />
+            {sep('/')}
+            <Spinner label="Month" value={String(D.getMonth()+1).padStart(2,'0')} field="month" />
+            {sep('/')}
+            <Spinner label="Day"   value={String(D.getDate()).padStart(2,'0')} field="day" />
+            <div style={{ width: 1, height: 60, background: 'rgba(255,255,255,0.08)', margin: '0 4px' }} />
+            <Spinner label="Hour"  value={String(D.getHours()).padStart(2,'0')} field="hour" />
+            {sep(':')}
+            <Spinner label="Min"   value={String(D.getMinutes()).padStart(2,'0')} field="minute" />
+          </div>
+        );
+      })()}
+
       {/* Timeline controls — hidden in Earth mode */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2" style={{
+      <div className="absolute" onClick={e => e.stopPropagation()} style={{
+        bottom: 16 + bottomOffset,
+        left: bottomOffset ? 12 : '50%',
+        right: bottomOffset ? 12 : 'auto',
+        transform: bottomOffset ? 'none' : 'translateX(-50%)',
         opacity: earthModeActive ? 0 : 1,
         pointerEvents: earthModeActive ? 'none' : 'auto',
         transition: 'opacity 0.4s ease',
+        maxWidth: bottomOffset ? undefined : 'calc(100vw - 24px)',
       }}>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-full"
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-full${bottomOffset ? ' justify-between' : ''}`}
           style={{ background: 'rgba(5,15,30,0.8)', border: '1px solid rgba(255,255,255,0.1)',
             backdropFilter: 'blur(12px)', fontFamily: 'var(--font-mono)' }}>
 
-          {(['«','‹‹','‹'] as const).map((ch, i) => (
+          {/* Step-back buttons — desktop only */}
+          {!bottomOffset && (['«','‹‹','‹'] as const).map((ch, i) => (
             <button key={ch} onClick={() => jumpDays([-365,-30,-1][i])} title={['−1 year','−1 month','−1 day'][i]}
               className="text-[11px] px-1 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>{ch}</button>
           ))}
+
+          {/* Mobile: single back day */}
+          {!!bottomOffset && (
+            <button onClick={() => jumpDays(-1)} title="−1 day"
+              className="text-[11px] px-1 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>‹</button>
+          )}
 
           <button onClick={() => setIsPlaying(p => !p)}
             className="w-7 h-7 flex items-center justify-center rounded-full text-white text-xs transition-all"
@@ -990,38 +1095,82 @@ export default function SolarSystemView({ onPlanetSelect, onEarthModeChange, cla
             {isPlaying ? '⏸' : '▶'}
           </button>
 
-          {(['›','››','»'] as const).map((ch, i) => (
+          {/* Step-forward buttons — desktop only */}
+          {!bottomOffset && (['›','››','»'] as const).map((ch, i) => (
             <button key={ch} onClick={() => jumpDays([1,30,365][i])} title={['+1 day','+1 month','+1 year'][i]}
               className="text-[11px] px-1 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>{ch}</button>
           ))}
 
-          <div className="w-px h-3 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
-
-          <input type="datetime-local"
-            value={simTimeRef.current.toISOString().slice(0, 16)}
-            onChange={e => handleDateInput(e.target.value)}
-            className="bg-transparent text-[11px] border-none outline-none w-36 cursor-pointer"
-            style={{ color: 'rgba(255,255,255,0.7)' }} />
-
-          <div className="w-px h-3 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
-
-          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>SPD</span>
-          <input type="range" min={0} max={6} step={0.05}
-            value={Math.log10(speed + 1)}
-            onChange={e => setSpeed(Math.max(0.1, Math.round(Math.pow(10, Number(e.target.value)) * 10) / 10))}
-            className="w-20" />
-          <span className="text-[11px] w-16 text-right" style={{ color: 'rgba(255,255,255,0.7)' }}>{fmtSpeed(speed)}</span>
+          {/* Mobile: single forward day */}
+          {!!bottomOffset && (
+            <button onClick={() => jumpDays(1)} title="+1 day"
+              className="text-[11px] px-1 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>›</button>
+          )}
 
           <div className="w-px h-3 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
-          <button onClick={setNow}
-            className="text-[11px] px-2.5 py-0.5 rounded-full transition-all"
-            style={{ color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.15)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}>
-            NOW
+
+          <button
+            onClick={() => {
+              setPickerDate(new Date(simTimeRef.current));
+              setShowDatePicker(p => !p);
+            }}
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.75)', fontSize: 11,
+              fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
+              padding: '2px 4px', borderRadius: 6,
+              flexShrink: 0,
+              transition: 'background 0.15s ease',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            {(() => {
+              const d = simTimeRef.current;
+              const y = d.getFullYear();
+              const mo = String(d.getMonth()+1).padStart(2,'0');
+              const dy = String(d.getDate()).padStart(2,'0');
+              const h  = String(d.getHours()).padStart(2,'0');
+              const mi = String(d.getMinutes()).padStart(2,'0');
+              return `${y} / ${mo} / ${dy}  ${h}:${mi}`;
+            })()}
           </button>
+
+          {/* SPD + NOW — desktop only */}
+          {!bottomOffset && (
+            <>
+              <div className="w-px h-3 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>SPD</span>
+              <input type="range" min={0} max={6} step={0.05}
+                value={Math.log10(speed + 1)}
+                onChange={e => setSpeed(Math.max(0.1, Math.round(Math.pow(10, Number(e.target.value)) * 10) / 10))}
+                className="w-20" />
+              <span className="text-[11px] w-16 text-right" style={{ color: 'rgba(255,255,255,0.7)' }}>{fmtSpeed(speed)}</span>
+              <div className="w-px h-3 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
+              <button onClick={setNow}
+                className="text-[11px] px-2.5 py-0.5 rounded-full transition-all"
+                style={{ color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.15)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}>
+                NOW
+              </button>
+            </>
+          )}
+
+          {/* NOW — mobile only */}
+          {!!bottomOffset && (
+            <button onClick={setNow}
+              className="text-[11px] px-2 py-0.5 rounded-full transition-all"
+              style={{ color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.15)', marginLeft: 2 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'; }}>
+              NOW
+            </button>
+          )}
         </div>
       </div>
 

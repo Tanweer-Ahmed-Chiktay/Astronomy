@@ -69,6 +69,140 @@ body {
 .float-panel-left  { left:  14px; }
 .float-panel-right { right: 14px; }
 
+/* ── Mobile bottom sheet panels ──────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .float-panel {
+    top: auto;
+    left: 12px !important;
+    right: 12px !important;
+    /* Float above the nav bar with a gap */
+    bottom: 80px;
+    width: auto !important;
+    /* Full pill — all corners rounded */
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    max-height: 68vh;
+    transform: translateY(calc(100% + 80px));
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease !important;
+    z-index: 50;
+    /* Stronger frost to read clearly over orrery */
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.09) 0%,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(6, 10, 22, 0.96) 100%
+    );
+    backdrop-filter: blur(64px) saturate(200%) brightness(1.05);
+    -webkit-backdrop-filter: blur(64px) saturate(200%) brightness(1.05);
+    box-shadow:
+      0 -4px 40px rgba(0, 0, 0, 0.6),
+      0 8px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 0.5px rgba(255, 255, 255, 0.14) inset,
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    padding-bottom: 12px;
+  }
+
+  .float-panel.mobile-open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* drag handle */
+  .float-panel::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.18);
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Mobile bottom nav bar ───────────────────────────────────────────────────── */
+.mobile-nav-bar {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .mobile-nav-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 8px 24px;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+    background: linear-gradient(
+      180deg,
+      rgba(6, 10, 22, 0.82) 0%,
+      rgba(4, 8, 18, 0.96) 100%
+    );
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(48px) saturate(180%) brightness(0.95);
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(0.95);
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 10px 16px;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: var(--font-ui);
+  }
+
+  .mobile-nav-btn.active {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .mobile-nav-btn-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .mobile-nav-btn-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .mobile-nav-btn.active .mobile-nav-btn-label {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Backdrop overlay when sheet is open */
+  .mobile-sheet-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 48;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .mobile-sheet-backdrop.visible {
+    display: block;
+  }
+}
+
 /* ── Glassmorphism cards ─────────────────────────────────────────────────────── */
 .glass-card {
   background: rgba(255, 255, 255, 0.05);
@@ -103,6 +237,13 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* ── Mobile: push canvas up so SolarSystemView controls don't hide behind nav ── */
+@media (max-width: 639px) {
+  .mobile-main-canvas {
+    bottom: 72px !important;
+  }
+}
 
 /* ── Range input ─────────────────────────────────────────────────────────────── */
 input[type="range"] {

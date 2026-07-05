@@ -222,9 +222,21 @@ export default function HomePage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [focusPlanet,  setFocusPlanet] = useState<PlanetName | null>(null);
   const [inEarthMode,  setInEarthMode] = useState(false);
+  const [isMobile,     setIsMobile]    = useState(false);
+  const [mobilePanel,  setMobilePanel] = useState<'none' | 'left' | 'right'>('none');
   const tz = userTZ();
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const mq = window.matchMedia('(max-width: 639px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
+      if (!e.matches) setMobilePanel('none');
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const load = (lat: number, lon: number) => {
@@ -316,10 +328,23 @@ export default function HomePage() {
       overflow: 'hidden', background: '#000510',
       color: 'var(--text-primary)', fontFamily: 'var(--font-ui)',
     }}>
+      {/* ── Mobile backdrop overlay ── */}
+      {isMobile && (
+        <div
+          className={`mobile-sheet-backdrop${mobilePanel !== 'none' ? ' visible' : ''}`}
+          onClick={() => setMobilePanel('none')}
+          style={{ zIndex: 45 }}
+        />
+      )}
+
       {/* ── Left floating panel — hidden in Earth mode ── */}
       <aside
-        className="float-panel float-panel-left"
-        style={{
+        className={`float-panel float-panel-left${isMobile && mobilePanel === 'left' ? ' mobile-open' : ''}`}
+        style={isMobile ? {
+          opacity: 1,
+          transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease',
+          pointerEvents: mobilePanel === 'left' ? 'auto' : 'none',
+        } : {
           opacity: mounted && !inEarthMode ? 1 : 0,
           transform: mounted && !inEarthMode ? 'translateX(0)' : 'translateX(-16px)',
           transition: 'opacity 0.4s ease, transform 0.4s ease',
@@ -354,8 +379,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* View toggle */}
-        <div style={{ padding: '12px 10px 8px' }}>
+        {/* View toggle — hidden on mobile (replaced by bottom nav) */}
+        {!isMobile && <div style={{ padding: '12px 10px 8px' }}>
           <div style={{
             display: 'flex', gap: 4, padding: 4,
             borderRadius: 12,
@@ -388,7 +413,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
 
         <div style={{ padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sky ? (
@@ -547,6 +572,7 @@ export default function HomePage() {
             lon={sky?.lon ?? -74.01}
             className="absolute inset-0"
             focusPlanet={focusPlanet}
+            bottomOffset={isMobile ? 72 : 0}
           />
         )}
 
@@ -615,8 +641,12 @@ export default function HomePage() {
 
       {/* ── Right floating panel — hidden in Earth mode ── */}
       <aside
-        className="float-panel float-panel-right"
-        style={{
+        className={`float-panel float-panel-right${isMobile && mobilePanel === 'right' ? ' mobile-open' : ''}`}
+        style={isMobile ? {
+          opacity: 1,
+          transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease',
+          pointerEvents: mobilePanel === 'right' ? 'auto' : 'none',
+        } : {
           opacity: mounted && !inEarthMode ? 1 : 0,
           transform: mounted && !inEarthMode ? 'translateX(0)' : 'translateX(16px)',
           transition: 'opacity 0.4s ease, transform 0.4s ease',
@@ -823,6 +853,25 @@ export default function HomePage() {
           }
         `}</style>
       </aside>
+
+      {/* ── Mobile bottom nav bar ── */}
+      <nav className="mobile-nav-bar">
+        <button
+          className={`mobile-nav-btn${mobilePanel === 'left' ? ' active' : ''}`}
+          onClick={() => setMobilePanel(p => p === 'left' ? 'none' : 'left')}
+        >
+          <span className="mobile-nav-btn-icon" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', fontFamily: 'var(--font-mono)' }}>SKY</span>
+          <span className="mobile-nav-btn-label">Details</span>
+        </button>
+
+        <button
+          className={`mobile-nav-btn${mobilePanel === 'right' ? ' active' : ''}`}
+          onClick={() => setMobilePanel(p => p === 'right' ? 'none' : 'right')}
+        >
+          <span className="mobile-nav-btn-icon" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', fontFamily: 'var(--font-mono)' }}>SOL</span>
+          <span className="mobile-nav-btn-label">Planets</span>
+        </button>
+      </nav>
     </div>
   );
 }
