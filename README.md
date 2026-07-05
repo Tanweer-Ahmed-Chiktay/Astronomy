@@ -157,6 +157,6 @@ npm run dev
 
 ## About
 
-Built by **Tanweer Ahmed** — a developer who cares about both the science and the craft.
+View live @ https://astronomy-beryl.vercel.app/
 
 [GitHub](https://github.com/Tanweer-Ahmed-Chiktay) · tanweerc76@gmail.com
