@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+:root {
+  --font-ui: var(--font-geist), 'Geist', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'Geist Mono', monospace;
+
+  /* Neutral palette */
+  --glass-bg:          rgba(12, 16, 28, 0.72);
+  --glass-bg-strong:   rgba(12, 16, 28, 0.85);
+  --glass-bg-subtle:   rgba(12, 16, 28, 0.55);
+  --glass-border:      rgba(255, 255, 255, 0.10);
+  --glass-border-glow: rgba(255, 255, 255, 0.18);
+  --glass-hover:       rgba(255, 255, 255, 0.07);
+  --glass-shine:       rgba(255, 255, 255, 0.07);
+
+  /* Text */
+  --text-primary:   rgba(255, 255, 255, 0.9);
+  --text-secondary: rgba(200, 210, 230, 0.6);
+  --text-muted:     rgba(200, 210, 230, 0.35);
+}
+
+@theme inline {
+  --color-background: #000510;
+  --color-foreground:  var(--text-primary);
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: #000510;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Floating side panel ─────────────────────────────────────────────────────── */
+.float-panel {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 234px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 20px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.025) 30%,
+    rgba(8, 12, 24, 0.82) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12) inset,
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 -1px 0 rgba(255, 255, 255, 0.04) inset;
+  z-index: 10;
+}
+
+.float-panel-left  { left:  14px; }
+.float-panel-right { right: 14px; }
+
+/* ── Glassmorphism cards ─────────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+.glass-card-sm {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+.glass-card-sm:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.14) inset;
+  transform: translateY(-3px);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* ── Range input ─────────────────────────────────────────────────────────────── */
+input[type="range"] {
+  accent-color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+/* ── Planet card in right panel ──────────────────────────────────────────────── */
+.planet-card {
+  width: 100%;
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.planet-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.08) inset, 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+  transform: translateY(-5px) scale(1.025);
+}
+.planet-card.selected {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 8px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* ── Badge ───────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ── Top nav pill ────────────────────────────────────────────────────────────── */
+.top-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(8, 12, 24, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.05) inset;
+  overflow: hidden;
+}
+
+.top-nav-pill .nav-seg {
+  padding: 6px 14px;
+  font-size: 10.5px;
+  font-family: var(--font-ui);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  transition: color 0.18s ease;
+}
+.top-nav-pill .nav-seg:last-child { border-right: none; }
+.top-nav-pill .nav-seg.nav-btn {
+  cursor: pointer;
+  background: transparent;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+.top-nav-pill .nav-seg.nav-btn:hover { color: rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.05); }
+.top-nav-pill .nav-seg.nav-btn.active {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
