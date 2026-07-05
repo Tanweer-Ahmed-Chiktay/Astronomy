@@ -885,9 +885,12 @@ export default function SolarSystemView({ onPlanetSelect, className = '', lat = 
 
       {/* Planet info card */}
       {planetInfo && (
-        <div className="absolute top-12 left-4 w-52 p-3 rounded-xl"
-          style={{ background: 'rgba(5,15,30,0.82)', border: '1px solid rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(12px)' }}>
+        <div className="absolute p-3 rounded-xl"
+          style={{ left: 252, top: 16, width: 136,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            backdropFilter: 'blur(24px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(120%)' }}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font-ui)' }}>
               {planetInfo.name}
